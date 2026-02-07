@@ -19,7 +19,7 @@ public class AdminService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public RegisterResponse registerStudent( StudentRegisterRequestDto req) {
+    public RegisterResponse registerStudent(StudentRegisterRequestDto req) {
 
         if (studentRepository.existsByEmail(req.getEmail()) || teacherRepository.existsByEmail(req.getEmail())) {
             throw new RuntimeException("Email already in use");
@@ -38,7 +38,6 @@ public class AdminService {
         studentRepository.save(student);
 
 
-
         return RegisterResponse.builder()
                 .fullName(student.getFirstName() + " " + student.getLastName())
                 .email(student.getEmail())
@@ -46,15 +45,15 @@ public class AdminService {
                 .build();
     }
 
-    public AuthResponse registerTeacher(RegisterTeacherRequest req) {
+    public RegisterResponse registerTeacher(TeacherRequestDto req) {
 
         if (studentRepository.existsByEmail(req.getEmail()) || teacherRepository.existsByEmail(req.getEmail())) {
             throw new RuntimeException("Email already in use");
         }
 
-        Role role = (req.getTeacherId() != null && req.getTeacherId() == 12345L)
-                ? Role.ADMIN
-                : Role.TEACHER;
+        RoleEnum role = (req.getTeacherId() != null && req.getTeacherId() == 12345L)
+                ? RoleEnum.ADMIN
+                : RoleEnum.TEACHER;
 
         Teacher teacher = Teacher.builder()
                 .teacherId(req.getTeacherId())
@@ -68,12 +67,11 @@ public class AdminService {
 
         teacherRepository.save(teacher);
 
-        String token = jwtService.generateToken(teacher.getEmail(), teacher.getRole());
 
-        return AuthResponse.builder()
-                .token(token)
-                .role(teacher.getRole())
-                .id(teacher.getTeacherId())
+        return RegisterResponse.builder()
                 .fullName(teacher.getFirstName() + " " + teacher.getLastName())
+                .email(teacher.getEmail())
+                .password(req.getPassword())
                 .build();
     }
+}
