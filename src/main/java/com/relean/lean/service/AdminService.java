@@ -5,6 +5,7 @@ package com.relean.lean.service;
 import com.relean.lean.dtos.*;
 import com.relean.lean.entities.*;
 import com.relean.lean.repository.*;
+import com.relean.lean.roles.RoleEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ public class AdminService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public  registerStudent( StudentRegisterRequestDto req) {
+    public RegisterResponse registerStudent( StudentRegisterRequestDto req) {
 
         if (studentRepository.existsByEmail(req.getEmail()) || teacherRepository.existsByEmail(req.getEmail())) {
             throw new RuntimeException("Email already in use");
@@ -30,19 +31,18 @@ public class AdminService {
                 .lastName(req.getLastName())
                 .email(req.getEmail())
                 .gender(req.getGender())
-                .passwordHash(passwordEncoder.encode(req.getPassword()))
-                .role(Role.STUDENT)
+                .password(passwordEncoder.encode(req.getPassword()))
+                .role(RoleEnum.STUDENT)
                 .build();
 
         studentRepository.save(student);
 
-        String token = jwtService.generateToken(student.getEmail(), student.getRole());
 
-        return AuthResponse.builder()
-                .token(token)
-                .role(student.getRole())
-                .id(student.getStudentId())
+
+        return RegisterResponse.builder()
                 .fullName(student.getFirstName() + " " + student.getLastName())
+                .email(student.getEmail())
+                .password(req.getPassword())
                 .build();
     }
 
