@@ -1,6 +1,6 @@
 package com.relean.lean.entities;
 
-//import com.relearn.auth.Role;
+import com.relean.lean.roles.RoleEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,6 +32,6 @@ public class Student {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
+    private RoleEnum role;
 }
 
