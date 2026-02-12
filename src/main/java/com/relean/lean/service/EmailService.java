@@ -8,6 +8,7 @@ package com.relean.lean.service;
 
 import java.io.File;
 
+import com.relean.lean.dtos.EmailDto;
 import com.relean.lean.dtos.RegisterResponse;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -31,13 +32,13 @@ public class EmailService {
 
     // Method 1
     // To send a simple email
-    public String sendSimpleMail(RegisterResponse details)
+    public String sendSimpleMail(EmailDto details)
     {
 
         // Try block to check for exceptions
         try {
 
-        
+
             SimpleMailMessage mailMessage
                     = new SimpleMailMessage();
 

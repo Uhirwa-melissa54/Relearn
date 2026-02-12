@@ -35,12 +35,13 @@ public class AdminService {
                 .role(RoleEnum.STUDENT)
                 .build();
 
-        studentRepository.save(student);
+        Student savedStudent=studentRepository.save(student);
+
 
 
         return RegisterResponse.builder()
-                .fullName(student.getFirstName() + " " + student.getLastName())
-                .email(student.getEmail())
+                .fullName(savedStudent.getFirstName() + " " + savedStudent.getLastName())
+                .email(savedStudent.getEmail())
                 .password(req.getPassword())
                 .build();
     }
