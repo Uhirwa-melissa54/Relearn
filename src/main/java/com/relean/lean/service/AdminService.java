@@ -66,7 +66,7 @@ public class AdminService {
         """.formatted(
                         savedStudent.getFirstName(),
                         savedStudent.getEmail(),
-                        savedStudent.getPassword()
+                        req.getPassword()
                 ))
                 .build();
 
