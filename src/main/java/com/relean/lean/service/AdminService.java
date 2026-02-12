@@ -65,12 +65,12 @@ public class AdminService {
                 .role(role)
                 .build();
 
-        teacherRepository.save(teacher);
+        Teacher savedTeacher=teacherRepository.save(teacher);
 
 
         return RegisterResponse.builder()
-                .fullName(teacher.getFirstName() + " " + teacher.getLastName())
-                .email(teacher.getEmail())
+                .fullName(savedTeacher.getFirstName() + " " + teacher.getLastName())
+                .email(savedTeacher.getEmail())
                 .password(req.getPassword())
                 .build();
     }
