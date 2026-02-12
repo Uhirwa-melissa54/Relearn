@@ -1,13 +1,5 @@
 package com.relean.lean.service;
 
-// Java Program to Illustrate Creation Of
-// Service implementation class
-
-
-// Importing required classes
-
-import java.io.File;
-
 import com.relean.lean.dtos.EmailDto;
 import com.relean.lean.dtos.RegisterResponse;
 import jakarta.mail.MessagingException;
@@ -20,22 +12,20 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-// Annotation
+
 @Service
-// Class
-// Implementing EmailService interface
+
 public class EmailService {
 
     @Autowired private JavaMailSender javaMailSender;
 
     @Value("${spring.mail.username}") private String sender;
 
-    // Method 1
-    // To send a simple email
+
     public String sendSimpleMail(EmailDto details)
     {
 
-        // Try block to check for exceptions
+
         try {
 
 
@@ -44,8 +34,8 @@ public class EmailService {
 
             mailMessage.setFrom(sender);
             mailMessage.setTo(details.getEmail());
-            mailMessage.setText(details.getPassword());
-            mailMessage.setSubject(details.getSubject());
+            mailMessage.setText(details.getMsgBody());
+
 
 
             javaMailSender.send(mailMessage);

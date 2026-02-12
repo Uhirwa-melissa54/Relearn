@@ -16,6 +16,7 @@ public class AdminService {
 
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
+    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
@@ -68,6 +69,8 @@ public class AdminService {
                         savedStudent.getPassword()
                 ))
                 .build();
+
+        emailService.sendSimpleMail(emailDto);
         return RegisterResponse.builder()
                 .fullName(savedStudent.getFirstName() + " " + savedStudent.getLastName())
                 .email(savedStudent.getEmail())
@@ -100,7 +103,7 @@ public class AdminService {
         EmailDto emailDto = EmailDto.builder()
                 .email(savedTeacher.getEmail())
                 .fullName(savedTeacher.getFirstName() + " " + savedTeacher.getLastName())
-                .password(req.getPassword()) 
+                .password(req.getPassword())
                 .msgBody("""
         Dear %s,
 
@@ -127,6 +130,8 @@ public class AdminService {
                         req.getPassword()
                 ))
                 .build();
+
+        emailService.sendSimpleMail(emailDto);
 
 
         return RegisterResponse.builder()
