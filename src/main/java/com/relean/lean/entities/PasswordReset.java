@@ -5,6 +5,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Data
 public class PasswordReset {
 
     @Id
