@@ -38,7 +38,6 @@ public class StudentService {
                 .email(student.getEmail())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .status("Logged in")
                 .build();
     }
 }

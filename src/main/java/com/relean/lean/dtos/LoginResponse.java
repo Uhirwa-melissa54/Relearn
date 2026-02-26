@@ -7,6 +7,6 @@ public class LoginResponse {
     String email;
     String accessToken;
     String refreshToken;
-    String status;
+
 
 }
