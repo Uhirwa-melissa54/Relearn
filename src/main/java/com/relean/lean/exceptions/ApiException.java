@@ -1,7 +1,8 @@
 package com.relean.lean.exceptions;
 
+import lombok.Data;
 import org.springframework.http.HttpStatus;
-
+@Data
 public class ApiException extends RuntimeException {
 
     private HttpStatus status;
@@ -11,7 +12,5 @@ public class ApiException extends RuntimeException {
         this.status = status;
     }
 
-    public HttpStatus getStatus() {
-        return status;
-    }
+
 }
