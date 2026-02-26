@@ -4,9 +4,11 @@ package com.relean.lean.service;
 
 import com.relean.lean.dtos.*;
 import com.relean.lean.entities.*;
+import com.relean.lean.exceptions.ApiException;
 import com.relean.lean.repository.*;
 import com.relean.lean.roles.RoleEnum;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +25,7 @@ public class AdminService {
     public RegisterResponse registerStudent(StudentRegisterRequestDto req) {
 
         if (studentRepository.existsByEmail(req.getEmail()) || teacherRepository.existsByEmail(req.getEmail())) {
-            throw new RuntimeException("Email already in use");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Email already exists");
         }
 
         Student student = Student.builder()
@@ -81,7 +83,7 @@ public class AdminService {
     public RegisterResponse registerTeacher(TeacherRequestDto req) {
 
         if (studentRepository.existsByEmail(req.getEmail()) || teacherRepository.existsByEmail(req.getEmail())) {
-            throw new RuntimeException("Email already in use");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Email already exists");
         }
 
         RoleEnum role = (req.getTeacherId() != null && req.getTeacherId() == 12345L)

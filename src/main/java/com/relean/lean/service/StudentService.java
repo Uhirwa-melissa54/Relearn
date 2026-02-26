@@ -3,8 +3,10 @@ package com.relean.lean.service;
 import com.relean.lean.dtos.LoginRequest;
 import com.relean.lean.dtos.LoginResponse;
 import com.relean.lean.entities.Student;
+import com.relean.lean.exceptions.ApiException;
 import com.relean.lean.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +21,10 @@ public class StudentService {
     public LoginResponse login(LoginRequest request) {
 
         Student student = studentRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Invalid email or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), student.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Invalid password or email");
         }
 
         String accessToken = jwtService.generateAccessToken(
