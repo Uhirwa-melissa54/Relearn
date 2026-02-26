@@ -35,8 +35,10 @@ public class StudentService {
         );
 
         return LoginResponse.builder()
+                .email(student.getEmail())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .status("Logged in")
                 .build();
     }
 }

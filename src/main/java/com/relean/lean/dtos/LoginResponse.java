@@ -5,7 +5,8 @@ import lombok.Builder;
 @Builder
 public class LoginResponse {
     String email;
-    String token;
+    String accessToken;
+    String refreshToken;
     String status;
 
 }
