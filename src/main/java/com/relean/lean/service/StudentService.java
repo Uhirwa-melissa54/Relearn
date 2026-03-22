@@ -15,8 +15,15 @@ import org.springframework.stereotype.Service;
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final SubmissionRepository submissionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+
+    public List<com.relean.lean.entities.Submission> getSubmissions(Long studentId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Student not found"));
+        return submissionRepository.findByStudent(student);
+    }
 
     public LoginResponse login(LoginRequest request) {
 

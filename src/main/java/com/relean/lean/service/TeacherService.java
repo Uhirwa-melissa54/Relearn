@@ -1,50 +1,55 @@
 package com.relean.lean.service;
 
-
-
-import com.relean.lean.dtos.LoginRequest;
-import com.relean.lean.dtos.LoginResponse;
-import com.relean.lean.entities.Student;
-import com.relean.lean.entities.Teacher;
+import com.relean.lean.dtos.AttendanceRequestDto;
+import com.relean.lean.entities.*;
 import com.relean.lean.exceptions.ApiException;
-import com.relean.lean.repository.StudentRepository;
-import com.relean.lean.repository.TeacherRepository;
+import com.relean.lean.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class TeacherService {
 
-    private final TeacherRepository teacherRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final EnrollmentRepository enrollmentRepository;
+    private final CourseRepository courseRepository;
+    private final AttendanceRepository attendanceRepository;
+    private final StudentRepository studentRepository;
 
-    public LoginResponse login(LoginRequest request) {
+    public List<Student> getStudentsByCourse(String courseCode) {
+        Course course = courseRepository.findByCourseCode(courseCode)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Course not found"));
+        return enrollmentRepository.findByCourse(course).stream()
+                .map(Enrollment::getStudent)
+                .collect(Collectors.toList());
+    }
 
-        Teacher teacher =teacherRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Invalid email or password"));
+    public void takeAttendance(List<AttendanceRequestDto> reqs) {
+        for (AttendanceRequestDto req : reqs) {
+            Course course = courseRepository.findByCourseCode(req.getCourseCode())
+                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Course not found"));
+            Student student = studentRepository.findById(req.getStudentId())
+                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Student not found"));
 
-        if (!passwordEncoder.matches(request.getPassword(), teacher.getPasswordHash())) {
-            throw new ApiException(HttpStatus.UNAUTHORIZED, "Invalid password or email");
+            Attendance attendance = Attendance.builder()
+                    .course(course)
+                    .student(student)
+                    .date(req.getDate() != null ? req.getDate() : LocalDate.now())
+                    .status(req.getStatus())
+                    .reason(req.getReason())
+                    .build();
+            attendanceRepository.save(attendance);
         }
+    }
 
-        String accessToken = jwtService.generateAccessToken(
-                teacher.getEmail(),
-                teacher.getRole()
-        );
-
-        String refreshToken = jwtService.generateRefreshToken(
-                teacher.getEmail()
-        );
-
-        return LoginResponse.builder()
-                .email(teacher.getEmail())
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+    public List<Attendance> getAbsentStudents(String courseCode, LocalDate date) {
+        Course course = courseRepository.findByCourseCode(courseCode)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Course not found"));
+        return attendanceRepository.findByCourseAndDateAndStatus(course, date, AttendanceStatus.ABSENT);
     }
 }
-

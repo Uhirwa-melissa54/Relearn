@@ -18,9 +18,100 @@ public class AdminService {
 
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
+    private final CourseRepository courseRepository;
+    private final ClassroomRepository classroomRepository;
+    private final EnrollmentRepository enrollmentRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+
+    public Course createCourse(CourseDto req) {
+        if (courseRepository.findByCourseCode(req.getCourseCode()).isPresent()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Course code already exists");
+        }
+        Course course = Course.builder()
+                .courseCode(req.getCourseCode())
+                .courseName(req.getCourseName())
+                .build();
+        return courseRepository.save(course);
+    }
+
+    public Classroom createClassroom(ClassroomDto req) {
+        if (classroomRepository.findByClassName(req.getClassName()).isPresent()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Classroom name already exists");
+        }
+        Classroom classroom = Classroom.builder()
+                .className(req.getClassName())
+                .build();
+        return classroomRepository.save(classroom);
+    }
+
+    public Course assignCourseToTeacher(Long courseId, Long teacherId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Course not found"));
+        Teacher teacher = teacherRepository.findById(teacherId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Teacher not found"));
+
+        course.setTeacher(teacher);
+        Course savedCourse = courseRepository.save(course);
+
+        // Send email to teacher
+        EmailDto emailDto = EmailDto.builder()
+                .email(teacher.getEmail())
+                .fullName(teacher.getFirstName() + " " + teacher.getLastName())
+                .msgBody("""
+                    Dear %s,
+                    
+                    You have been assigned to the course: **%s (%s)**.
+                    
+                    You can now manage students and take attendance for this course.
+                    
+                    Best regards,
+                    RCA MIS Team
+                    """.formatted(teacher.getFirstName(), course.getCourseName(), course.getCourseCode()))
+                .build();
+        emailService.sendSimpleMail(emailDto);
+
+        return savedCourse;
+    }
+
+    public void enrollStudentsToCourse(EnrollmentRequestDto req) {
+        Course course = courseRepository.findByCourseCode(req.getCourseCode())
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Course not found"));
+        Classroom classroom = classroomRepository.findByClassName(req.getClassName())
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Classroom not found"));
+
+        for (Long studentId : req.getStudentIds()) {
+            Student student = studentRepository.findById(studentId)
+                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Student not found with ID: " + studentId));
+
+            if (!enrollmentRepository.existsByStudentAndCourse(student, course)) {
+                Enrollment enrollment = Enrollment.builder()
+                        .student(student)
+                        .course(course)
+                        .classroom(classroom)
+                        .build();
+                enrollmentRepository.save(enrollment);
+
+                // Send email to student
+                EmailDto emailDto = EmailDto.builder()
+                        .email(student.getEmail())
+                        .fullName(student.getFirstName() + " " + student.getLastName())
+                        .msgBody("""
+                            Dear %s,
+                            
+                            You have been enrolled in the course: **%s (%s)** in class **%s**.
+                            
+                            Welcome to the course!
+                            
+                            Best regards,
+                            RCA MIS Team
+                            """.formatted(student.getFirstName(), course.getCourseName(), course.getCourseCode(), classroom.getClassName()))
+                        .build();
+                emailService.sendSimpleMail(emailDto);
+            }
+        }
+    }
 
     public RegisterResponse registerStudent(StudentRegisterRequestDto req) {
 

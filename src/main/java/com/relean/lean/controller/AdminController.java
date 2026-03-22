@@ -1,8 +1,8 @@
 package com.relean.lean.controller;
 
-import com.relean.lean.dtos.RegisterResponse;
-import com.relean.lean.dtos.StudentRegisterRequestDto;
-import com.relean.lean.dtos.TeacherRequestDto;
+import com.relean.lean.dtos.*;
+import com.relean.lean.entities.Classroom;
+import com.relean.lean.entities.Course;
 import com.relean.lean.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +14,30 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
 
     private final AdminService adminService;
+
+    @PostMapping("/create-course")
+    public ResponseEntity<Course> createCourse(@RequestBody CourseDto req) {
+        return ResponseEntity.ok(adminService.createCourse(req));
+    }
+
+    @PostMapping("/create-classroom")
+    public ResponseEntity<Classroom> createClassroom(@RequestBody ClassroomDto req) {
+        return ResponseEntity.ok(adminService.createClassroom(req));
+    }
+
+    @PatchMapping("/assign-course/{courseId}/teacher/{teacherId}")
+    public ResponseEntity<Course> assignCourseToTeacher(
+            @PathVariable Long courseId,
+            @PathVariable Long teacherId
+    ) {
+        return ResponseEntity.ok(adminService.assignCourseToTeacher(courseId, teacherId));
+    }
+
+    @PostMapping("/enroll-students")
+    public ResponseEntity<String> enrollStudentsToCourse(@RequestBody EnrollmentRequestDto req) {
+        adminService.enrollStudentsToCourse(req);
+        return ResponseEntity.ok("Students enrolled successfully");
+    }
 
 
 
